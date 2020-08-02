@@ -46,7 +46,7 @@ def get_arguments():
         help='metadata directory')
     parser.add_argument(
         '--batch_size', 
-        default=32, 
+        default=1, 
         type=int, 
         help='Batch Size')
     parser.add_argument(
@@ -95,9 +95,8 @@ def main():
     model.eval()
     for step, (features, targets) in enumerate(testdataloader):
         print('%d / %d' % (step,len(testdataloader) - 1))
-        spec = Variable(features[0:300,:,:]).cuda()
+        spec = Variable(features).cuda()
         aud_o, feats = model(spec.unsqueeze(1).float())
-        import ipdb; ipdb.set_trace()
         # prediction = softmax(aud_o)
 
         for name in targets['video-names']:
