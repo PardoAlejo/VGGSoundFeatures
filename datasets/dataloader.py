@@ -15,7 +15,7 @@ import ffmpeg
 from ffmpeg import Error
 import pandas as pd
 from datetime import timedelta
-
+import glob
 
 class GetAudioVideoDataset(Dataset):
 
@@ -34,7 +34,7 @@ class GetAudioVideoDataset(Dataset):
         self._init_atransform()
         #  Retrieve list of audio and video files
         self.video_files = []
-        self._set_video_files(os.path.join(args.csv_path, args.paths_csv))
+        self._set_video_files(os.path.join(args.csv_path, args.paths_video))
         self.durations = {}
         self._set_video_duration(os.path.join(args.csv_path, args.duration_csv))
 
@@ -42,9 +42,9 @@ class GetAudioVideoDataset(Dataset):
     def _init_atransform(self):
         self.aid_transform = transforms.Compose([transforms.ToTensor()])
 
-    def _set_video_files(self, paths_csv):
-        paths_df = pd.read_csv(paths_csv)
-        self.video_files = paths_df['video_path'].tolist()
+    def _set_video_files(self, paths_video):
+        # paths_df = pd.read_csv(paths_csv)
+        self.video_files = glob.glob(f'{paths_video}/*.mp4')
         print(f'# of audio files = {len(self.video_files):d} ')
 
     def _set_video_duration(self, duration_csv):
@@ -78,6 +78,7 @@ class GetAudioVideoDataset(Dataset):
         video_samples = []
 
         # Audio
+        # import ipdb; ipdb.set_trace()
         sample = self.extract_audio(mp4file)
         duration = self.durations[video_name]
         sample = sample[0:duration*self.rate] # Remove last 30 seconds

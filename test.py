@@ -14,9 +14,6 @@ import csv
 from model import AVENet
 from datasets import GetAudioVideoDataset
 
-
-
-
 def get_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -35,8 +32,8 @@ def get_arguments():
         type=str,
         help='metadata directory')
     parser.add_argument(
-        '--paths_csv',
-        default='video_path.csv',
+        '--paths_video',
+        default='/home/pardogl/datasets/movies',
         type=str,
         help='metadata directory')
     parser.add_argument(
@@ -73,7 +70,7 @@ def main():
     args = get_arguments()
 
     # init network
-    os.environ["CUDA_VISIBLE_DEVICES"]="1"
+    os.environ["CUDA_VISIBLE_DEVICES"]="0"
     model= AVENet(args) 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = model.cuda()
