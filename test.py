@@ -33,7 +33,7 @@ def get_arguments():
         help='metadata directory')
     parser.add_argument(
         '--paths_video',
-        default='/home/pardogl/datasets/movies',
+        default='/home/pardogl/scratch/data/movies/youtube/*/',
         type=str,
         help='metadata directory')
     parser.add_argument(

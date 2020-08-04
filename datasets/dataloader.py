@@ -49,7 +49,7 @@ class GetAudioVideoDataset(Dataset):
 
     def _set_video_duration(self, duration_csv):
         duration_df = pd.read_csv(duration_csv)
-        self.durations = {row[1].videoid:row[1].duration for row in duration_df.iterrows()}
+        self.durations = {row[1].videoid:int(row[1].duration) for row in duration_df.iterrows()}
 
     def __len__(self):
         return len(self.video_files)  
