@@ -72,7 +72,6 @@ class GetAudioVideoDataset(Dataset):
 
     def __getitem__(self, idx):
         mp4file = self.video_files[idx]
-        print(f'{mp4file}')
         # import ipdb; ipdb.set_trace()
         video_name = os.path.splitext(os.path.basename(mp4file))[0]
         video_spectograms = []
@@ -112,11 +111,8 @@ class GetAudioVideoDataset(Dataset):
             std = np.std(spectrogram)
             spectrogram = np.divide(spectrogram-mean,std+1e-9)
             video_spectograms.append(spectrogram)
-        try:
-            out = np.array(video_spectograms)
-        except:
-            import ipdb; ipdb.set_trace()
-        return video_name, torch.tensor(np.array(video_spectograms)), mp4file
+        spectogram = torch.tensor(np.array(video_spectograms))
+        return video_name, spectogram, mp4file
     
     def collate_fn(self, data_lst):
         video_names = [_video_name for _video_name, _, _ in data_lst]

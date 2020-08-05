@@ -4,11 +4,11 @@ from torch.optim import *
 import torchvision
 from torchvision.transforms import *
 import torch.nn as nn
-from torch.autograd import Variable
 from torch.utils.data import Dataset, DataLoader
 
 import numpy as np
 import json
+import glob
 import argparse
 import csv
 from model import AVENet
@@ -72,35 +72,44 @@ def main():
     # init network
     os.environ["CUDA_VISIBLE_DEVICES"]="0"
     model= AVENet(args) 
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = model.cuda()
-    
     # load pretrained models
     checkpoint = torch.load(args.summaries)
     model.load_state_dict(checkpoint['model_state_dict'])
-    model.to(device)
+    model.eval()
     print('load pretrained model.')
 
     # create dataloader
     testdataset = GetAudioVideoDataset(args,  mode='test')
-    testdataloader = DataLoader(testdataset, batch_size=args.batch_size, shuffle=False,num_workers=4,
-                                collate_fn=testdataset.collate_fn)
+    testdataloader = DataLoader(testdataset, batch_size=1, shuffle=False, num_workers=4)
 
     softmax = nn.Softmax(dim=1)
     print("Loaded dataloader.")
 
     model.eval()
-    for step, (features, targets) in enumerate(testdataloader):
-        print('%d / %d' % (step,len(testdataloader) - 1))
-        spec = Variable(features).cuda()
-        aud_o, feats = model(spec.unsqueeze(1).float())
-        # prediction = softmax(aud_o)
 
-        for name in targets['video-names']:
-            this_start = targets['video-name-to-slice'][name][0]
-            this_end = targets['video-name-to-slice'][name][1]
-            this_vid_feat = feats[this_start:this_end,:]
-            np.save(targets['video-name-to-path'][name].replace('.mp4','_audio.npy'), this_vid_feat.cpu().data.numpy())
+    existent_feats = glob.glob(f'{args.paths_video}/*_audio.npy')
+    with torch.no_grad():
+        for step, (name, spectograms, path) in enumerate(testdataloader):
+            name = name[0]
+            path = path[0]
+            if path.replace('.mp4', '_audio.npy') in existent_feats:
+                print(f'{name} skiped, features already computed')
+                continue
+            else:
+                print(f'Computing features for {name}, {step:d} / {len(testdataloader) - 1:d}')
+            sample = spectograms.permute(1,0,2,3)
+            n_chunk = sample.shape[0]
+            features = torch.FloatTensor(n_chunk, 512).fill_(0)
+            n_iter = int(np.ceil(n_chunk / args.batch_size))
+            for i in range(n_iter):
+                min_ind = i * args.batch_size
+                max_ind = (i + 1) * args.batch_size
+                video_batch = sample[min_ind:max_ind].cuda()
+                _, batch_feats = model(video_batch)
+                features[min_ind:max_ind] = batch_feats.cpu()
+            features = features.numpy()
+            np.save(path.replace('.mp4','_audio.npy'), features)
 
 
 if __name__ == "__main__":
