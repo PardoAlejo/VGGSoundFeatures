@@ -83,7 +83,7 @@ def main():
 
     # create dataloader
     testdataset = GetAudioVideoDataset(args,  mode='test')
-    testdataloader = DataLoader(testdataset, batch_size=args.batch_size, shuffle=False,num_workers=0,
+    testdataloader = DataLoader(testdataset, batch_size=args.batch_size, shuffle=False,num_workers=4,
                                 collate_fn=testdataset.collate_fn)
 
     softmax = nn.Softmax(dim=1)

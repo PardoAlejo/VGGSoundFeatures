@@ -26,7 +26,8 @@ class GetAudioVideoDataset(Dataset):
         self.win_size = 16
         self.rate = 44100
         self.seconds_per_snippet = self.win_size/self.fps
-
+        
+        self.max_duration = 300 #5 minutes
         self.mode = mode
         self.transforms = transforms
 
@@ -80,8 +81,8 @@ class GetAudioVideoDataset(Dataset):
         # Audio
         # import ipdb; ipdb.set_trace()
         sample = self.extract_audio(mp4file)
-        duration = self.durations[video_name]
-        sample = sample[0:duration*self.rate] # Remove last 30 seconds
+        duration = min(self.max_duration, self.durations[video_name]) #Limit the duration of the video
+        sample = sample[0:duration*self.rate]
         padded_duration = int(duration + (self.win_size/self.fps - duration%(self.win_size/self.fps)))
         sound_stride = int((self.stride/self.fps)*self.rate)
         sound_win_size = (self.win_size/self.fps)*self.rate
