@@ -90,12 +90,17 @@ class GetAudioVideoDataset(Dataset):
             this_end = int(this_start + sound_win_size)
             this_sample = sample[this_start:this_end].copy()
             # repeat in case audio is too short
-            if (sample.shape[0]-this_start) < sound_win_size:
-                num_to_pad = int(np.ceil(sound_win_size - (sample.shape[0]-this_start)))
+            # if (sample.shape[0]-this_start) < sound_win_size:
+            #     num_to_pad = int(np.ceil(sound_win_size - (sample.shape[0]-this_start)))
+            #     this_sample = np.pad(this_sample, 
+            #                         [(0, num_to_pad)],
+            #                         'constant')
+            if i>1 and not this_sample.shape[-1] == video_samples[-1].shape[-1]:
+                
+                num_to_pad = video_samples[-1].shape[-1] - this_sample.shape[-1]
                 this_sample = np.pad(this_sample, 
                                     [(0, num_to_pad)],
                                     'constant')
-
             this_sample[this_sample > 1.] = 1.
             this_sample[this_sample < -1.] = -1.
             video_samples.append(this_sample)
@@ -106,6 +111,10 @@ class GetAudioVideoDataset(Dataset):
             std = np.std(spectrogram)
             spectrogram = np.divide(spectrogram-mean,std+1e-9)
             video_spectograms.append(spectrogram)
+        try:
+            out = np.array(video_spectograms)
+        except:
+            import ipdb; ipdb.set_trace()
         return video_name, torch.tensor(np.array(video_spectograms)), mp4file
     
     def collate_fn(self, data_lst):
