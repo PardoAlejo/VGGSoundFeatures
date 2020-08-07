@@ -93,6 +93,9 @@ def main():
         for step, (name, spectograms, path) in enumerate(testdataloader):
             name = name[0]
             path = path[0]
+            if not spectograms.numpy().any():
+                print(f'Could not read {path}')
+                continue
             if path.replace('.mp4', '_audio.npy') in existent_feats:
                 print(f'{name} skiped, features already computed')
                 continue
