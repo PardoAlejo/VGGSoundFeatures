@@ -23,7 +23,7 @@ class GetAudioVideoDataset(Dataset):
         
         self.fps = 24
         self.stride = 8
-        self.win_size = 16
+        self.win_size = args.window_size
         self.rate = 44100
         self.seconds_per_snippet = self.win_size/self.fps
         
@@ -35,9 +35,9 @@ class GetAudioVideoDataset(Dataset):
         self._init_atransform()
         #  Retrieve list of audio and video files
         self.video_files = []
-        self._set_video_files(os.path.join(args.csv_path, args.paths_video))
+        self._set_video_files(os.path.join(args.paths_video))
         self.durations = {}
-        self._set_video_duration(os.path.join(args.csv_path, args.duration_csv))
+        self._set_video_duration(os.path.join(args.duration_csv))
 
 
     def _init_atransform(self):
@@ -115,21 +115,5 @@ class GetAudioVideoDataset(Dataset):
             video_spectograms.append(spectrogram)
         spectogram = torch.tensor(np.array(video_spectograms))
         return video_name, spectogram, mp4file
-    
-    def collate_fn(self, data_lst):
-        video_names = [_video_name for _video_name, _, _ in data_lst]
-        video_name_to_slice = {}
-        video_name_to_path = {}
-        current_ind = 0
-        for this_video_name, this_features, this_video_path in data_lst:
-            video_name_to_slice[this_video_name] = (current_ind, current_ind + this_features.shape[0])
-            current_ind += this_features.shape[0]
-            video_name_to_path[this_video_name] = this_video_path
-        features    = torch.cat([_features for _, _features, _ in data_lst],dim=0)
 
-        targets = {'video-names': video_names,
-                   'video-name-to-slice': video_name_to_slice,
-                   'video-name-to-path': video_name_to_path, 
-                   }
-        return features, targets
 
