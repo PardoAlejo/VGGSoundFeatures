@@ -22,7 +22,7 @@ def npy2h5(feat_type='audio'):
     for video in tqdm.tqdm(videos):
         feature = np.load(open(video,'rb'))
         features.append(feature)
-        name = osp.basename(video).replace('.npy','')
+        name = osp.basename(video).replace('_audio.npy','')
         names.append(name)
 
     print('Saving hdf5 file')
