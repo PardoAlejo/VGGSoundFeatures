@@ -22,7 +22,7 @@ def get_length(filename):
     return np.ceil(duration_s)
 
 if __name__ == "__main__":
-    path = '/home/pardogl/datasets/movies/youtube/*/*.mp4'
+    path = '../../datasets/movies/unedited-set/clips/*.mp4'
     vids = glob.glob(path)
     names = []
     durations = []
@@ -32,5 +32,5 @@ if __name__ == "__main__":
         duration = get_length(vid)
         durations.append(duration)
     df = pd.DataFrame(list(zip(names, durations)), 
-                        columns=['videoid','durations'])
+                        columns=['videoid','duration'])
     df.to_csv('data/durations.csv', index=False)

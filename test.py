@@ -59,7 +59,7 @@ def get_arguments():
         help='Shortcut type of resnet (A | B)')
     parser.add_argument(
         '--window_size',
-        default=16,
+        default=240,
         type=int,
         help='Window size for feature extraction')
     parser.add_argument(
@@ -92,7 +92,7 @@ def main():
 
     model.eval()
 
-    existent_feats = glob.glob(f'{args.paths_video}/*_audio.npy')
+    existent_feats = glob.glob(f'{args.paths_video}/*_audio_{args.window_size}.npy')
     with torch.no_grad():
         for step, (name, spectograms, path) in enumerate(testdataloader):
             name = name[0]

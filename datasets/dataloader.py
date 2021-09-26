@@ -15,19 +15,17 @@ import ffmpeg
 from ffmpeg import Error
 import pandas as pd
 from datetime import timedelta
-import glob
 
 class GetAudioVideoDataset(Dataset):
 
     def __init__(self, args, mode='train', transforms=None):
         
         self.fps = 24
-        self.stride = 8
         self.win_size = args.window_size
-        self.rate = 44100
+        self.stride = self.win_size
+        self.rate = 16000
         self.seconds_per_snippet = self.win_size/self.fps
         
-        self.max_duration = 300 #5 minutes
         self.mode = mode
         self.transforms = transforms
 
@@ -46,7 +44,7 @@ class GetAudioVideoDataset(Dataset):
     def _set_video_files(self, paths_video):
         # paths_df = pd.read_csv(paths_csv)
         self.video_files = glob.glob(f'{paths_video}/*.mp4')
-        print(f'# of audio files = {len(self.video_files):d} ')
+        print(f'# of audio files = {len(self.video_files):d}')
 
     def _set_video_duration(self, duration_csv):
         duration_df = pd.read_csv(duration_csv)
@@ -72,17 +70,14 @@ class GetAudioVideoDataset(Dataset):
 
     def __getitem__(self, idx):
         mp4file = self.video_files[idx]
-        # import ipdb; ipdb.set_trace()
         video_name = os.path.splitext(os.path.basename(mp4file))[0]
         video_spectograms = []
         video_samples = []
-
-        # Audio
-        # import ipdb; ipdb.set_trace()
+        
         sample = self.extract_audio(mp4file)
         if not sample.any():
             return video_name, sample, mp4file
-        duration = min(self.max_duration, self.durations[video_name]) #Limit the duration of the video
+        duration = self.durations[video_name] #Limit the duration of the video
         sample = sample[0:duration*self.rate]
         padded_duration = int(duration + (self.win_size/self.fps - duration%(self.win_size/self.fps)))
         sound_stride = int((self.stride/self.fps)*self.rate)
